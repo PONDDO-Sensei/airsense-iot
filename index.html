@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>AirSense IoT</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+  <main id="app">
+
+    <!-- ส่วนหัว: สถานที่ + ปุ่มตั้งค่า -->
+    <header class="header-bar">
+      <span class="pill">📍 Lampang, Thailand</span>
+      <span class="pill">⚙ Settings</span>
+    </header>
+
+    <!-- ชื่อแอป -->
+    <h1 class="app-title">AirSense IoT</h1>
+    <div class="app-subtitle">YOUR AIR, IN REAL TIME</div>
+
+    <!-- เกจวงกลมแสดงค่า PM2.5 -->
+    <section class="gauge">
+      <svg viewBox="0 0 260 260">
+        <!-- วงรางสีจาง -->
+        <circle id="track" cx="130" cy="130" r="100" fill="none"
+                stroke="rgba(255,255,255,.15)" stroke-width="8" stroke-linecap="round"
+                transform="rotate(135 130 130)" />
+        <!-- วงค่า (ความยาว/สี ถูกกำหนดโดย JavaScript) -->
+        <circle id="arc" cx="130" cy="130" r="100" fill="none"
+                stroke-width="8" stroke-linecap="round"
+                transform="rotate(135 130 130)" />
+      </svg>
+
+      <div class="gauge-center">
+        <div class="gauge-label">PM2.5</div>
+        <div class="gauge-value" id="val">--</div>
+        <div class="gauge-label">µg/m³</div>
+      </div>
+    </section>
+
+    <!-- สถานะ + คำแนะนำ + กล่องเตือน -->
+    <div class="status" id="status">--</div>
+    <p class="tip" id="tip"></p>
+    <div class="alert" id="alert">⚠ คุณภาพอากาศอันตราย หลีกเลี่ยงกิจกรรมกลางแจ้ง</div>
+
+    <!-- การ์ดสรุปข้อมูล -->
+    <section class="card">
+
+      <div class="stats">
+        <div class="stat">
+          <div class="gauge-label">PM2.5</div>
+          <div class="stat-value" id="pm2">--</div>
+        </div>
+        <div class="stat">
+          <div class="gauge-label">Humidity</div>
+          <div class="stat-value" id="hum">--</div>
+        </div>
+      </div>
+
+      <!-- กราฟเส้นย่อ (JavaScript วาดให้) -->
+      <svg class="sparkline" id="spark" viewBox="0 0 300 50"></svg>
+
+      <div class="device-info">
+        <div class="info-row">
+          <span>Device</span>
+          <b>IoT-01 · Home sensor</b>
+        </div>
+        <div class="info-row">
+          <span>Connection</span>
+          <b><span class="dot"></span>Connected</b>
+        </div>
+        <div class="info-row">
+          <span>Last updated</span>
+          <b id="upd">--</b>
+        </div>
+        <div class="info-row">
+          <span>Records in DB</span>
+          <b id="cnt">0</b>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- แผงควบคุมตัวจำลองเซนเซอร์ (ปุ่มสร้างโดย JavaScript) -->
+    <section class="simulator">
+      ตัวจำลองเซนเซอร์ (ส่งค่าทุก 3 วินาที)
+      <div class="simulator-buttons" id="btns"></div>
+    </section>
+
+  </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+  <script>
+    /* ==========================================================
+       0. ตั้งค่า Supabase  (แก้ 2 บรรทัดนี้)
+          Supabase Dashboard -> Project Settings -> API
+       ========================================================== */
+    const SUPABASE_URL = "https://hgvyfbqfznseozkcqdgz.supabase.co";
+    const SUPABASE_KEY = "sb_publishable_wSwXKUU9KM6ph_6OEU1kLQ_AteZLlGV";   // ใช้ anon public key เท่านั้น ห้ามใช้ service_role
+    const DEVICE = "IoT-01";
+
+    const configured = !SUPABASE_URL.includes("YOUR-PROJECT");
+    const sb = configured ? supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
+
+
+    /* ==========================================================
+       1. ระดับคุณภาพอากาศ (แก้เกณฑ์ได้ที่นี่)
+       ========================================================== */
+    const LEVELS = [
+      { k: "Good",      max: 25,  color: "#4ade80", tip: "อากาศดี เหมาะกับการทำกิจกรรมกลางแจ้ง", bg: "linear-gradient(#0a5aa8,#2b9be0 60%,#8cc8ee)" },
+      { k: "Moderate",  max: 50,  color: "#facc15", tip: "อากาศพอใช้ กลุ่มเสี่ยงควรระวัง",        bg: "linear-gradient(#4a6a8a,#6f8aa3 60%,#9aa9b8)" },
+      { k: "Unhealthy", max: 100, color: "#fb923c", tip: "ลดกิจกรรมกลางแจ้ง ปิดหน้าต่าง",          bg: "linear-gradient(#2f3a47,#4a5360 60%,#5d6570)" },
+      { k: "Hazardous", max: 999, color: "#ff5a4a", tip: "งดกิจกรรมกลางแจ้ง ใส่หน้ากาก N95",       bg: "linear-gradient(#0c0f14,#1b2029 60%,#2a2f38)" }
+    ];
+
+    const level = (v) => LEVELS.find((l) => v <= l.max);
+
+
+    /* ==========================================================
+       2. ฐานข้อมูล (Supabase / PostgreSQL)
+       ========================================================== */
+    const db = {
+      // บันทึกค่าใหม่ (เวลา recorded_at ให้ฐานข้อมูลใส่เอง)
+      async insert(r) {
+        const { error } = await sb.from("readings").insert({
+          device_code: DEVICE, pm25: r.pm25, humidity: r.humidity
+        });
+        if (error) console.error("insert error:", error.message);
+      },
+
+      // ดึงค่าล่าสุด n รายการ เรียงเก่า -> ใหม่ พร้อมจำนวนทั้งหมด
+      async history(n = 40) {
+        const { data, error, count } = await sb.from("readings")
+          .select("*", { count: "exact" })
+          .eq("device_code", DEVICE)
+          .order("recorded_at", { ascending: false })
+          .limit(n);
+        if (error) { console.error("select error:", error.message); return { list: [], total: 0 }; }
+        return { list: data.reverse(), total: count || 0 };
+      }
+    };
+
+
+    /* ==========================================================
+       3. ตัวจำลองเซนเซอร์ (ส่งค่าเข้า Supabase)
+          ของจริง: ESP32 จะ POST เข้าตาราง readings แทนส่วนนี้
+       ========================================================== */
+    const TARGETS = { auto: null, good: 12, moderate: 35, unhealthy: 78, hazardous: 165 };
+
+    let mode = "auto";
+    let simOn = true;     // เปิด/ปิดการส่งข้อมูลจากหน้านี้
+    let pm = 15;
+    let hum = 65;
+    let autoTarget = 20;
+    let autoHold = 0;
+
+    async function simulate() {
+      if (!simOn) return;
+
+      if (mode === "auto") {
+        autoHold -= 1;
+        if (autoHold <= 0) {
+          autoTarget = Math.random() * 180 + 5;
+          autoHold = 8;
+        }
+      }
+
+      const target = mode === "auto" ? autoTarget : TARGETS[mode];
+      pm += (target - pm) * 0.25 + (Math.random() - 0.5) * 3;
+      pm = Math.max(2, pm);
+
+      hum += (Math.random() - 0.5) * 2;
+      hum = Math.min(90, Math.max(35, hum));
+
+      await db.insert({ pm25: +pm.toFixed(1), humidity: +hum.toFixed(1) });
+    }
+
+
+    /* ==========================================================
+       4. แสดงผลบนหน้าจอ
+       ========================================================== */
+    const $ = (id) => document.getElementById(id);
+
+    const ARC_LENGTH = 2 * Math.PI * 100;
+    const GAUGE_ARC = ARC_LENGTH * 0.75;
+    const GAUGE_MAX = 200;
+
+    function render(list, total) {
+      const latest = list[list.length - 1];
+      if (!latest) return;
+
+      const L = level(latest.pm25);
+      const fraction = Math.min(latest.pm25 / GAUGE_MAX, 1);
+
+      $("app").style.setProperty("--bg", L.bg);
+
+      $("track").setAttribute("stroke-dasharray", GAUGE_ARC + " " + ARC_LENGTH);
+      $("arc").setAttribute("stroke-dasharray", GAUGE_ARC * fraction + " " + ARC_LENGTH);
+      $("arc").setAttribute("stroke", L.color);
+
+      $("val").textContent = Math.round(latest.pm25);
+      $("status").textContent = "● " + L.k;
+      $("status").style.color = L.color;
+      $("tip").textContent = L.tip;
+      $("alert").style.display = (L.k === "Hazardous" || L.k === "Unhealthy") ? "block" : "none";
+
+      $("pm2").innerHTML = '<span style="color:' + L.color + '">' + Math.round(latest.pm25) + '</span> <small>µg/m³</small>';
+      $("hum").innerHTML = Math.round(latest.humidity) + "<small>%</small>";
+      $("upd").textContent = new Date(latest.recorded_at).toLocaleTimeString("th-TH", {
+        hour: "2-digit", minute: "2-digit", second: "2-digit"
+      });
+      $("cnt").textContent = total;
+
+      drawSparkline(list, L.color);
+    }
+
+    function drawSparkline(data, color) {
+      const maxValue = Math.max(50, ...data.map((d) => Number(d.pm25)));
+      const points = data.map((d, i) => {
+        const x = (i / Math.max(data.length - 1, 1)) * 300;
+        const y = 48 - (Number(d.pm25) / maxValue) * 44;
+        return x.toFixed(1) + "," + y.toFixed(1);
+      }).join(" ");
+
+      $("spark").innerHTML =
+        '<polyline points="' + points + '" fill="none" stroke="' + color +
+        '" stroke-width="2" stroke-linejoin="round"/>';
+    }
+
+    // ดึงข้อมูลจากฐานข้อมูลมาแสดง
+    async function refresh() {
+      const { list, total } = await db.history(40);
+      render(list.map((r) => ({ ...r, pm25: Number(r.pm25), humidity: Number(r.humidity) })), total);
+    }
+
+
+    /* ==========================================================
+       5. ปุ่มควบคุมตัวจำลอง
+       ========================================================== */
+    const MODE_NAMES = { auto: "Auto", good: "Good", moderate: "Moderate", unhealthy: "Unhealthy", hazardous: "Hazardous" };
+
+    function buildButtons() {
+      const box = $("btns");
+      box.innerHTML = "";
+
+      Object.keys(MODE_NAMES).forEach((key) => {
+        const btn = document.createElement("button");
+        btn.textContent = MODE_NAMES[key];
+        if (key === mode) btn.className = "on";
+        btn.onclick = () => { mode = key; buildButtons(); simulate().then(refresh); };
+        box.appendChild(btn);
+      });
+
+      // เปิด/ปิดการส่งข้อมูล (ปิดไว้ถ้าแค่อยากเปิดดูข้อมูลที่มีอยู่)
+      const toggle = document.createElement("button");
+      toggle.textContent = simOn ? "ส่งข้อมูล: เปิด" : "ส่งข้อมูล: ปิด";
+      toggle.className = simOn ? "on" : "";
+      toggle.onclick = () => { simOn = !simOn; buildButtons(); };
+      box.appendChild(toggle);
+    }
+
+
+    /* ==========================================================
+       6. เริ่มทำงาน
+       ========================================================== */
+    buildButtons();
+
+    if (!configured) {
+      $("tip").textContent = "ยังไม่ได้ตั้งค่า Supabase: แก้ SUPABASE_URL และ SUPABASE_KEY ใน index.html";
+      $("status").textContent = "ยังไม่เชื่อมต่อ";
+    } else {
+      refresh();
+      setInterval(async () => { await simulate(); refresh(); }, 3000);
+    }
+  </script>
+</body>
+
+</html>
