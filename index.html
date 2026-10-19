@@ -5,35 +5,74 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>AirSense IoT</title>
+  <meta name="theme-color" content="#0b4f9c" id="theme">
+  <link rel="preconnect" href="https://hgvyfbqfznseozkcqdgz.supabase.co" crossorigin>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
-  <main id="app">
+  <div class="phone">
+    <main id="app" data-level="Good">
 
-    <!-- ส่วนหัว: สถานที่ + ปุ่มตั้งค่า -->
+    <!-- ท้องฟ้า: ยิ่ง PM2.5 สูง หมอกควันยิ่งหนา (ควบคุมด้วยตัวแปร --amt จาก script.js) -->
+    <div class="sky" aria-hidden="true">
+        <div class="sky-bg clear"></div>
+        <div class="sky-bg smog"></div>
+        <div class="sky-bg soot"></div>
+        <div class="sun"></div>
+        <div class="clouds">
+        <div class="cl far"><i class="b"></i><i class="l"></i></div>
+        <div class="cl near"><i class="b"></i><i class="l"></i></div>
+      </div>
+        <svg class="birds" viewBox="0 0 120 40" aria-hidden="true">
+        <path d="M4 14 q5 -7 10 0 q5 -7 10 0"/>
+        <path d="M44 6 q4 -6 8 0 q4 -6 8 0"/>
+        <path d="M80 22 q3 -5 6 0 q3 -5 6 0"/>
+      </svg>
+        <div class="fog f3"></div>
+        <svg class="hills" viewBox="0 0 1200 260" preserveAspectRatio="xMidYMax slice">
+        <defs>
+          <!-- ไล่สีให้ตีนเขาจางลงเป็นหมอก ทำให้ดูมีระยะใกล้-ไกล -->
+          <linearGradient id="gFar"  x1="0" y1="0" x2="0" y2="1"><stop class="s-a" offset="0"/><stop class="s-a-end" offset="1"/></linearGradient>
+          <linearGradient id="gMid"  x1="0" y1="0" x2="0" y2="1"><stop class="s-c" offset="0"/><stop class="s-c-end" offset="1"/></linearGradient>
+          <linearGradient id="gNear" x1="0" y1="0" x2="0" y2="1"><stop class="s-b" offset="0"/><stop class="s-b-end" offset="1"/></linearGradient>
+        </defs>
+        <path class="h-far"  fill="url(#gFar)"  d="M0 260 L0 143.5 L10 142.5 L20 141.7 L30 141.0 L40 140.2 L50 138.7 L60 136.2 L70 132.1 L80 126.2 L90 118.6 L100 109.7 L110 100.0 L120 90.3 L130 81.5 L140 74.3 L150 69.1 L160 66.1 L170 65.2 L180 65.8 L190 67.6 L200 69.7 L210 71.6 L220 73.1 L230 74.0 L240 74.4 L250 74.7 L260 75.4 L270 76.8 L280 79.3 L290 82.7 L300 86.9 L310 91.4 L320 95.6 L330 98.9 L340 100.8 L350 101.2 L360 100.0 L370 97.6 L380 94.7 L390 91.9 L400 90.0 L410 89.6 L420 91.1 L430 94.4 L440 99.2 L450 105.2 L460 111.6 L470 117.8 L480 123.2 L490 127.7 L500 131.2 L510 133.9 L520 136.2 L530 138.4 L540 141.0 L550 144.1 L560 147.5 L570 150.9 L580 153.8 L590 155.5 L600 155.5 L610 153.3 L620 148.8 L630 142.2 L640 134.0 L650 124.8 L660 115.6 L670 107.0 L680 99.7 L690 94.1 L700 90.1 L710 87.5 L720 86.0 L730 84.8 L740 83.7 L750 82.1 L760 80.2 L770 78.0 L780 75.8 L790 74.2 L800 73.5 L810 74.2 L820 76.2 L830 79.3 L840 83.2 L850 87.1 L860 90.5 L870 92.6 L880 93.2 L890 92.0 L900 89.3 L910 85.7 L920 81.7 L930 78.2 L940 75.8 L950 74.9 L960 75.8 L970 78.4 L980 82.3 L990 87.0 L1000 91.9 L1010 96.6 L1020 100.7 L1030 104.3 L1040 107.6 L1050 110.9 L1060 114.7 L1070 119.3 L1080 124.9 L1090 131.5 L1100 138.6 L1110 145.8 L1120 152.2 L1130 157.2 L1140 160.2 L1150 160.7 L1160 158.8 L1170 154.7 L1180 148.9 L1190 142.2 L1200 135.4 L1200 260 Z"/>
+        <path class="h-mid"  fill="url(#gMid)"  d="M0 260 L0 171.6 L10 168.1 L20 164.6 L30 162.7 L40 163.7 L50 167.6 L60 173.5 L70 179.8 L80 184.7 L90 187.4 L100 187.8 L110 186.7 L120 185.3 L130 184.4 L140 184.2 L150 184.0 L160 182.6 L170 178.6 L180 171.6 L190 162.2 L200 151.8 L210 142.2 L220 135.3 L230 131.7 L240 131.4 L250 133.0 L260 135.1 L270 136.6 L280 137.0 L290 136.8 L300 137.1 L310 139.0 L320 142.7 L330 147.8 L340 153.0 L350 156.7 L360 157.8 L370 156.1 L380 152.4 L390 148.5 L400 146.1 L410 146.3 L420 149.5 L430 154.9 L440 161.0 L450 166.4 L460 170.5 L470 173.4 L480 175.8 L490 178.9 L500 183.4 L510 189.0 L520 194.8 L530 198.9 L540 200.0 L550 197.3 L560 191.0 L570 182.6 L580 173.9 L590 166.5 L600 161.4 L610 158.3 L620 156.3 L630 154.2 L640 151.3 L650 147.4 L660 143.4 L670 140.6 L680 140.1 L690 142.0 L700 145.9 L710 150.2 L720 153.2 L730 153.5 L740 150.9 L750 146.1 L760 140.7 L770 136.3 L780 134.2 L790 134.5 L800 136.6 L810 139.3 L820 141.6 L830 143.1 L840 144.2 L850 146.1 L860 150.0 L870 156.5 L880 165.5 L890 175.5 L900 184.8 L910 191.5 L920 194.7 L930 194.4 L940 191.7 L950 188.1 L960 184.9 L970 182.9 L980 181.8 L990 180.5 L1000 178.1 L1010 174.0 L1020 168.5 L1030 162.7 L1040 158.1 L1050 156.0 L1060 156.8 L1070 159.8 L1080 163.6 L1090 166.2 L1100 166.5 L1110 163.8 L1120 158.8 L1130 152.8 L1140 147.4 L1150 143.4 L1160 141.0 L1170 139.5 L1180 137.7 L1190 134.9 L1200 130.9 L1200 260 Z"/>
+        <path class="h-near" fill="url(#gNear)" d="M0 260 L0 211.3 L6 218.1 L12 214.9 L18 218.1 L24 213.5 L30 215.9 L36 208.8 L42 214.3 L48 206.0 L54 216.3 L60 215.0 L66 222.1 L72 220.9 L78 228.6 L84 223.4 L90 232.0 L96 222.4 L102 231.0 L108 222.4 L114 227.6 L120 220.2 L126 224.5 L132 213.5 L138 222.2 L144 217.4 L150 218.7 L156 206.7 L162 212.0 L168 202.6 L174 203.2 L180 195.0 L186 195.8 L192 190.0 L198 193.2 L204 188.7 L210 195.4 L216 188.6 L222 199.2 L228 196.4 L234 201.5 L240 194.7 L246 201.7 L252 194.3 L258 202.1 L264 197.4 L270 204.4 L276 199.3 L282 207.8 L288 205.6 L294 209.4 L300 205.4 L306 207.4 L312 200.8 L318 203.1 L324 193.5 L330 200.4 L336 194.7 L342 202.2 L348 199.5 L354 207.9 L360 204.0 L366 214.2 L372 210.5 L378 218.6 L384 215.1 L390 221.6 L396 214.6 L402 225.1 L408 219.7 L414 230.3 L420 228.3 L426 235.2 L432 229.3 L438 236.2 L444 228.0 L450 231.9 L456 219.1 L462 224.3 L468 212.4 L474 217.3 L480 210.0 L486 213.5 L492 202.8 L498 212.2 L504 207.7 L510 210.6 L516 203.3 L522 207.5 L528 197.6 L534 204.6 L540 200.0 L546 204.5 L552 199.2 L558 207.4 L564 206.1 L570 210.9 L576 203.9 L582 211.2 L588 201.3 L594 207.1 L600 197.0 L606 201.0 L612 189.2 L618 196.5 L624 190.3 L630 195.3 L636 187.7 L642 196.0 L648 189.1 L654 196.2 L660 188.9 L666 195.7 L672 189.7 L678 196.9 L684 190.1 L690 202.2 L696 196.8 L702 211.2 L708 209.8 L714 220.6 L720 216.4 L726 226.3 L732 223.9 L738 227.4 L744 219.0 L750 226.3 L756 218.3 L762 225.7 L768 216.0 L774 226.3 L780 217.6 L786 225.9 L792 219.7 L798 222.8 L804 214.6 L810 217.7 L816 207.9 L822 214.1 L828 210.7 L834 214.6 L840 210.1 L846 218.6 L852 216.6 L858 222.4 L864 219.3 L870 222.8 L876 218.2 L882 219.8 L888 209.3 L894 215.7 L900 210.1 L906 212.8 L912 207.0 L918 210.7 L924 203.4 L930 206.9 L936 194.8 L942 200.2 L948 192.7 L954 192.5 L960 183.4 L966 187.7 L972 180.5 L978 188.3 L984 181.2 L990 193.2 L996 187.5 L1002 199.0 L1008 192.2 L1014 202.9 L1020 199.2 L1026 205.4 L1032 200.9 L1038 208.6 L1044 205.5 L1050 213.7 L1056 207.3 L1062 218.8 L1068 210.6 L1074 220.8 L1080 216.0 L1086 218.5 L1092 212.1 L1098 214.3 L1104 208.1 L1110 212.1 L1116 208.0 L1122 214.0 L1128 209.8 L1134 218.5 L1140 213.6 L1146 222.4 L1152 218.6 L1158 224.0 L1164 221.2 L1170 224.6 L1176 219.4 L1182 226.5 L1188 222.5 L1194 229.8 L1200 224.3 L1200 260 Z"/>
+      </svg>
+        <div class="fog f2"></div>
+        <div class="fog f1"></div>
+        <div class="dust"></div>
+      </div>
+
+    <div class="scroller">
     <header class="header-bar">
-      <span class="pill">📍 Lampang, Thailand</span>
-      <span class="pill">⚙ Settings</span>
+      <div class="loc">
+        <button type="button" class="pill" id="loc-btn" aria-haspopup="listbox" aria-expanded="false">📍 <span id="loc-name">Lampang, Thailand</span> <span class="caret">▾</span></button>
+        <div class="menu" id="loc-menu" role="listbox" hidden></div>
+      </div>
+      <span class="icon-btn" aria-label="Settings">⚙</span>
     </header>
 
-    <!-- ชื่อแอป -->
-    <h1 class="app-title">AirSense IoT</h1>
-    <div class="app-subtitle">YOUR AIR, IN REAL TIME</div>
+    <div class="app-title">AIRSENSE IOT</div>
 
     <!-- เกจวงกลมแสดงค่า PM2.5 -->
     <section class="gauge">
       <svg viewBox="0 0 260 260">
-        <!-- วงรางสีจาง -->
         <circle id="track" cx="130" cy="130" r="100" fill="none"
-                stroke="rgba(255,255,255,.15)" stroke-width="8" stroke-linecap="round"
+                stroke="rgba(255,255,255,.22)" stroke-width="9" stroke-linecap="round"
                 transform="rotate(135 130 130)" />
-        <!-- วงค่า (ความยาว/สี ถูกกำหนดโดย JavaScript) -->
+        <g id="ticks" stroke="rgba(255,255,255,.45)" stroke-width="1.5"></g>
         <circle id="arc" cx="130" cy="130" r="100" fill="none"
-                stroke-width="8" stroke-linecap="round"
+                stroke-width="9" stroke-linecap="round"
                 transform="rotate(135 130 130)" />
+        <text class="gauge-end" x="58" y="228">0</text>
+        <text class="gauge-end" x="202" y="228">200</text>
       </svg>
-
       <div class="gauge-center">
         <div class="gauge-label">PM2.5</div>
         <div class="gauge-value" id="val">--</div>
@@ -41,241 +80,34 @@
       </div>
     </section>
 
-    <!-- สถานะ + คำแนะนำ + กล่องเตือน -->
     <div class="status" id="status">--</div>
-    <p class="tip" id="tip"></p>
-    <div class="alert" id="alert">⚠ คุณภาพอากาศอันตราย หลีกเลี่ยงกิจกรรมกลางแจ้ง</div>
+    <div class="alert" id="alert"><span class="alert-ico">⚠</span><span id="tip"></span></div>
 
-    <!-- การ์ดสรุปข้อมูล -->
     <section class="card">
-
       <div class="stats">
-        <div class="stat">
-          <div class="gauge-label">PM2.5</div>
-          <div class="stat-value" id="pm2">--</div>
-        </div>
-        <div class="stat">
-          <div class="gauge-label">Humidity</div>
-          <div class="stat-value" id="hum">--</div>
-        </div>
+        <div class="stat"><div class="gauge-label">PM2.5</div><div class="stat-value" id="pm2">--</div></div>
+        <div class="stat"><div class="gauge-label">ความชื้น</div><div class="stat-value" id="hum">--</div></div>
       </div>
-
-      <!-- กราฟเส้นย่อ (JavaScript วาดให้) -->
-      <svg class="sparkline" id="spark" viewBox="0 0 300 50"></svg>
-
+      <svg class="sparkline" id="spark" viewBox="0 0 300 56"></svg>
       <div class="device-info">
-        <div class="info-row">
-          <span>Device</span>
-          <b>IoT-01 · Home sensor</b>
-        </div>
-        <div class="info-row">
-          <span>Connection</span>
-          <b><span class="dot"></span>Connected</b>
-        </div>
-        <div class="info-row">
-          <span>Last updated</span>
-          <b id="upd">--</b>
-        </div>
-        <div class="info-row">
-          <span>Records in DB</span>
-          <b id="cnt">0</b>
-        </div>
+        <div class="info-cell"><span>อุปกรณ์</span><b id="devname">IoT-01</b></div>
+        <div class="info-cell"><span>การเชื่อมต่อ</span><b><span class="dot" id="dot"></span><span id="conn">กำลังเชื่อมต่อ…</span></b></div>
+        <div class="info-cell"><span>อัปเดตล่าสุด</span><b id="upd">--</b></div>
+        <div class="info-cell"><span>ข้อมูลในฐานข้อมูล</span><b id="cnt">0</b></div>
       </div>
-
     </section>
 
-    <!-- แผงควบคุมตัวจำลองเซนเซอร์ (ปุ่มสร้างโดย JavaScript) -->
     <section class="simulator">
-      ตัวจำลองเซนเซอร์ (ส่งค่าทุก 3 วินาที)
+      <div class="sim-top"><span>ตัวจำลองเซนเซอร์ · ส่งทุก 3 วิ</span><b id="sim-out">Auto</b></div>
+      <input type="range" id="sim-range" min="0" max="200" step="1" value="40" aria-label="ค่า PM2.5 ที่จำลอง">
       <div class="simulator-buttons" id="btns"></div>
     </section>
-
+    </div>
   </main>
+  </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
-  <script>
-    /* ==========================================================
-       0. ตั้งค่า Supabase  (แก้ 2 บรรทัดนี้)
-          Supabase Dashboard -> Project Settings -> API
-       ========================================================== */
-    const SUPABASE_URL = "https://hgvyfbqfznseozkcqdgz.supabase.co";
-    const SUPABASE_KEY = "sb_publishable_wSwXKUU9KM6ph_6OEU1kLQ_AteZLlGV";   // ใช้ anon public key เท่านั้น ห้ามใช้ service_role
-    const DEVICE = "IoT-01";
-
-    const configured = !SUPABASE_URL.includes("YOUR-PROJECT");
-    const sb = configured ? supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
-
-
-    /* ==========================================================
-       1. ระดับคุณภาพอากาศ (แก้เกณฑ์ได้ที่นี่)
-       ========================================================== */
-    const LEVELS = [
-      { k: "Good",      max: 25,  color: "#4ade80", tip: "อากาศดี เหมาะกับการทำกิจกรรมกลางแจ้ง", bg: "linear-gradient(#0a5aa8,#2b9be0 60%,#8cc8ee)" },
-      { k: "Moderate",  max: 50,  color: "#facc15", tip: "อากาศพอใช้ กลุ่มเสี่ยงควรระวัง",        bg: "linear-gradient(#4a6a8a,#6f8aa3 60%,#9aa9b8)" },
-      { k: "Unhealthy", max: 100, color: "#fb923c", tip: "ลดกิจกรรมกลางแจ้ง ปิดหน้าต่าง",          bg: "linear-gradient(#2f3a47,#4a5360 60%,#5d6570)" },
-      { k: "Hazardous", max: 999, color: "#ff5a4a", tip: "งดกิจกรรมกลางแจ้ง ใส่หน้ากาก N95",       bg: "linear-gradient(#0c0f14,#1b2029 60%,#2a2f38)" }
-    ];
-
-    const level = (v) => LEVELS.find((l) => v <= l.max);
-
-
-    /* ==========================================================
-       2. ฐานข้อมูล (Supabase / PostgreSQL)
-       ========================================================== */
-    const db = {
-      // บันทึกค่าใหม่ (เวลา recorded_at ให้ฐานข้อมูลใส่เอง)
-      async insert(r) {
-        const { error } = await sb.from("readings").insert({
-          device_code: DEVICE, pm25: r.pm25, humidity: r.humidity
-        });
-        if (error) console.error("insert error:", error.message);
-      },
-
-      // ดึงค่าล่าสุด n รายการ เรียงเก่า -> ใหม่ พร้อมจำนวนทั้งหมด
-      async history(n = 40) {
-        const { data, error, count } = await sb.from("readings")
-          .select("*", { count: "exact" })
-          .eq("device_code", DEVICE)
-          .order("recorded_at", { ascending: false })
-          .limit(n);
-        if (error) { console.error("select error:", error.message); return { list: [], total: 0 }; }
-        return { list: data.reverse(), total: count || 0 };
-      }
-    };
-
-
-    /* ==========================================================
-       3. ตัวจำลองเซนเซอร์ (ส่งค่าเข้า Supabase)
-          ของจริง: ESP32 จะ POST เข้าตาราง readings แทนส่วนนี้
-       ========================================================== */
-    const TARGETS = { auto: null, good: 12, moderate: 35, unhealthy: 78, hazardous: 165 };
-
-    let mode = "auto";
-    let simOn = true;     // เปิด/ปิดการส่งข้อมูลจากหน้านี้
-    let pm = 15;
-    let hum = 65;
-    let autoTarget = 20;
-    let autoHold = 0;
-
-    async function simulate() {
-      if (!simOn) return;
-
-      if (mode === "auto") {
-        autoHold -= 1;
-        if (autoHold <= 0) {
-          autoTarget = Math.random() * 180 + 5;
-          autoHold = 8;
-        }
-      }
-
-      const target = mode === "auto" ? autoTarget : TARGETS[mode];
-      pm += (target - pm) * 0.25 + (Math.random() - 0.5) * 3;
-      pm = Math.max(2, pm);
-
-      hum += (Math.random() - 0.5) * 2;
-      hum = Math.min(90, Math.max(35, hum));
-
-      await db.insert({ pm25: +pm.toFixed(1), humidity: +hum.toFixed(1) });
-    }
-
-
-    /* ==========================================================
-       4. แสดงผลบนหน้าจอ
-       ========================================================== */
-    const $ = (id) => document.getElementById(id);
-
-    const ARC_LENGTH = 2 * Math.PI * 100;
-    const GAUGE_ARC = ARC_LENGTH * 0.75;
-    const GAUGE_MAX = 200;
-
-    function render(list, total) {
-      const latest = list[list.length - 1];
-      if (!latest) return;
-
-      const L = level(latest.pm25);
-      const fraction = Math.min(latest.pm25 / GAUGE_MAX, 1);
-
-      $("app").style.setProperty("--bg", L.bg);
-
-      $("track").setAttribute("stroke-dasharray", GAUGE_ARC + " " + ARC_LENGTH);
-      $("arc").setAttribute("stroke-dasharray", GAUGE_ARC * fraction + " " + ARC_LENGTH);
-      $("arc").setAttribute("stroke", L.color);
-
-      $("val").textContent = Math.round(latest.pm25);
-      $("status").textContent = "● " + L.k;
-      $("status").style.color = L.color;
-      $("tip").textContent = L.tip;
-      $("alert").style.display = (L.k === "Hazardous" || L.k === "Unhealthy") ? "block" : "none";
-
-      $("pm2").innerHTML = '<span style="color:' + L.color + '">' + Math.round(latest.pm25) + '</span> <small>µg/m³</small>';
-      $("hum").innerHTML = Math.round(latest.humidity) + "<small>%</small>";
-      $("upd").textContent = new Date(latest.recorded_at).toLocaleTimeString("th-TH", {
-        hour: "2-digit", minute: "2-digit", second: "2-digit"
-      });
-      $("cnt").textContent = total;
-
-      drawSparkline(list, L.color);
-    }
-
-    function drawSparkline(data, color) {
-      const maxValue = Math.max(50, ...data.map((d) => Number(d.pm25)));
-      const points = data.map((d, i) => {
-        const x = (i / Math.max(data.length - 1, 1)) * 300;
-        const y = 48 - (Number(d.pm25) / maxValue) * 44;
-        return x.toFixed(1) + "," + y.toFixed(1);
-      }).join(" ");
-
-      $("spark").innerHTML =
-        '<polyline points="' + points + '" fill="none" stroke="' + color +
-        '" stroke-width="2" stroke-linejoin="round"/>';
-    }
-
-    // ดึงข้อมูลจากฐานข้อมูลมาแสดง
-    async function refresh() {
-      const { list, total } = await db.history(40);
-      render(list.map((r) => ({ ...r, pm25: Number(r.pm25), humidity: Number(r.humidity) })), total);
-    }
-
-
-    /* ==========================================================
-       5. ปุ่มควบคุมตัวจำลอง
-       ========================================================== */
-    const MODE_NAMES = { auto: "Auto", good: "Good", moderate: "Moderate", unhealthy: "Unhealthy", hazardous: "Hazardous" };
-
-    function buildButtons() {
-      const box = $("btns");
-      box.innerHTML = "";
-
-      Object.keys(MODE_NAMES).forEach((key) => {
-        const btn = document.createElement("button");
-        btn.textContent = MODE_NAMES[key];
-        if (key === mode) btn.className = "on";
-        btn.onclick = () => { mode = key; buildButtons(); simulate().then(refresh); };
-        box.appendChild(btn);
-      });
-
-      // เปิด/ปิดการส่งข้อมูล (ปิดไว้ถ้าแค่อยากเปิดดูข้อมูลที่มีอยู่)
-      const toggle = document.createElement("button");
-      toggle.textContent = simOn ? "ส่งข้อมูล: เปิด" : "ส่งข้อมูล: ปิด";
-      toggle.className = simOn ? "on" : "";
-      toggle.onclick = () => { simOn = !simOn; buildButtons(); };
-      box.appendChild(toggle);
-    }
-
-
-    /* ==========================================================
-       6. เริ่มทำงาน
-       ========================================================== */
-    buildButtons();
-
-    if (!configured) {
-      $("tip").textContent = "ยังไม่ได้ตั้งค่า Supabase: แก้ SUPABASE_URL และ SUPABASE_KEY ใน index.html";
-      $("status").textContent = "ยังไม่เชื่อมต่อ";
-    } else {
-      refresh();
-      setInterval(async () => { await simulate(); refresh(); }, 3000);
-    }
-  </script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+  <script src="script.js"></script>
 </body>
 
 </html>
